@@ -3,7 +3,7 @@
      herringEBTbif.c
    PURPOSE
      Size and condition structured model for herring feeding on zooplankton and benthos with seasonal temperature and light regimes.
-	 Linked to the PNAS manuscript by Croll et al.
+	 Linked to the Ecology Letters manuscript by Croll et al (2026).
 ***/
 
 /*==========================================================================
