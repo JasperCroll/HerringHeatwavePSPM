@@ -48,10 +48,12 @@ holste2005fit <- nls(EP~sharpeschoolhigh_1981(temp = temp, r_tref, e, eh, th, tr
 holste2005$pred <- predict(holste2005fit)
 
 holste2005_plot <- ggplot(data=holste2005,aes(x=temp))+
+  geom_rect( aes(xmin=as.Date(2.399), xmax=as.Date(25.435), ymin=-Inf, ymax=Inf), fill="gray90")+
   geom_point(aes(y=EP))+
   geom_line(aes(y=pred), colour="red")+
   theme_classic()+
   labs(x="Temperature", y="Resource egg production")
+
 
 
 ### RESOURCE GENERATION TIME ###
@@ -77,6 +79,7 @@ huntly1992predict <- data.frame(temp=seq(0,35,0.01),
                                      Arr=Arrfunc(seq(0,35,0.01), huntly1992fit$estimate[1], huntly1992fit$estimate[2]))
 
 huntly1992_plot <- ggplot(data=huntly1992predict)+
+  geom_rect( aes(xmin=as.Date(2.399), xmax=as.Date(19.435), ymin=-Inf, ymax=Inf), fill="gray90")+
   geom_line(aes(x=temp, y=huntly))+
   geom_line(aes(x=temp, y=Arr), colour="red")+
   labs(x="Temperature", y="Resource generation time")+
@@ -110,6 +113,7 @@ bernreuter2009predict <- data.frame(temp=seq(5,25,0.01),
                                     SS=sharpeschoolhigh_1981(seq(5,25,0.01), bernreuter2009fit$estimate[1], bernreuter2009fit$estimate[2], bernreuter2009fit$estimate[3], bernreuter2009fit$estimate[4], tref=8.588)) 
 
 bernreuter2009_plot<- ggplot(data=bernreuter2009predict)+
+  geom_rect( aes(xmin=as.Date(2.399), xmax=as.Date(19.435), ymin=-Inf, ymax=Inf), fill="gray90")+
   geom_line(aes(x=temp, y=bernreuter))+
   geom_line(aes(x=temp, y=SS), colour="red")+
   labs(x="Temperature", y="Herring gastric evacuation")+
@@ -143,6 +147,7 @@ peck2012HTpredict <- data.frame(temp=seq(5,20,0.01),
                                 Arr= peck2012HTfit$estimate[3]+ Arrfunc(seq(5,20,0.01), peck2012HTfit$estimate[1] , peck2012HTfit$estimate[2] ))
 
 peck2012HT_plot <- ggplot(data=peck2012HTpredict)+
+  geom_rect( aes(xmin=as.Date(4.204), xmax=as.Date(15.920), ymin=-Inf, ymax=Inf), fill="gray90")+
   geom_line(aes(x=temp, y=peck))+
   geom_line(aes(x=temp, y=Arr), colour="red")+
   labs(x="Temperature", y="Herring hatching time")+
@@ -168,8 +173,28 @@ peck2012ESpred<-data.frame(temp = seq(3,22,0.5))
 peck2012ESpred$pred <- predict(peck2012ESfit,newdata = peck2012ESpred )
 
 peck2012ES_plot <- ggplot(data=peck2012ES, aes(x=temp))+
+  geom_rect( aes(xmin=as.Date(4.204), xmax=as.Date(15.920), ymin=-Inf, ymax=Inf), fill="gray90")+
   geom_point(aes(y=ES))+
   geom_line(data = peck2012ESpred,aes(y=pred), colour="red")+
+  labs(x="Temperature", y="Hering egg survival")+
+  theme_classic()
+
+
+## alternative fit
+start_vals <- get_start_vals(peck2012ES$temp, peck2012ES$ES, model_name =
+                               'sharpeschoolhigh_1981')
+
+peck2012ESfitb <- nls(ES~sharpeschoolhigh_1981(temp = temp, r_tref, e, eh, th, tref=8.588 ), 
+                     data = peck2012ES, start= c(r_tref=100, e=0.05, eh=100, th=20), algorithm="port",
+                     control=list(tol=1e-10,minFactor=1e-20), trace = TRUE)
+
+peck2012ESpred_alt<-data.frame(temp = seq(3,22,0.5))
+peck2012ESpred_alt$pred <- predict(peck2012ESfitb,newdata = peck2012ESpred )
+
+peck2012ES_plot_alt <- ggplot(data=peck2012ES, aes(x=temp))+
+  geom_rect( aes(xmin=as.Date(4.204), xmax=as.Date(15.920), ymin=-Inf, ymax=Inf), fill="gray90")+
+  geom_point(aes(y=ES))+
+  geom_line(data = peck2012ESpred_alt,aes(y=pred), colour="red")+
   labs(x="Temperature", y="Hering egg survival")+
   theme_classic()
 
@@ -260,6 +285,18 @@ temperture_plot <- ggplot(data=daydata33002,aes(x=doy,y=avgtemp))+
 
 ggsave("Figures/FigureS1.pdf", plot=temperture_plot, width=15, height=7.5, units="cm")
 
+
+temperture_plot_sim <- ggplot(data=daydata33002,aes(x=as.Date(doy),y=avgtemp))+
+  geom_rect(aes(xmin=as.Date(125), xmax=as.Date(125+76), ymin=-Inf, ymax=Inf), fill="gray90")+
+  geom_line(data=modelpredict4,aes(y=predtemp), size=1)+
+  annotate("text", x = as.Date(125+76/2), y = Inf, label = "Spawning\nseason", vjust=1)+
+  theme_classic()+
+  labs(x="Day", y="Temperature")+
+  theme(legend.title = element_blank())+
+  scale_x_date(date_labels="%b", breaks=breaks_pretty(12))+
+  scale_y_continuous(limits=c(0, 16))
+
+ggsave("Figures/temperature_plot_simp.pdf", plot=temperture_plot_sim, width=15, height=7.5, units="cm")
 
 
 ### HEATWAVE PATTERNS
